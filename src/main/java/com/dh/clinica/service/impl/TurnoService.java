@@ -154,7 +154,7 @@ public class TurnoService implements ITurnoService {
 //    public List<TurnoResponseDto> buscarTurnofechaIniFinDTO(LocalDate fechaIni, LocalDate FechaFin) {
 //        return turnoRepository.findByFechaBetween(fechaIni,FechaFin);
 //    }
-
+    @Override
     public List<Turno> buscarTurnofechaIniFin(LocalDate fechaini, LocalDate fechaFin) {
         return turnoRepository.findByFechaBetween(fechaini, fechaFin);
     }
