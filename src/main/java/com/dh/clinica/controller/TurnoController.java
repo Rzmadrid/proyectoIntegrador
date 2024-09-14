@@ -1,15 +1,21 @@
 package com.dh.clinica.controller;
 
-import com.dh.clinica.model.Paciente;
-import com.dh.clinica.model.Turno;
-import com.dh.clinica.service.PacienteService;
-import com.dh.clinica.service.TurnoService;
+import com.dh.clinica.dto.request.TurnoModificarDto;
+import com.dh.clinica.dto.request.TurnoRequestDto;
+import com.dh.clinica.dto.response.TurnoResponseDto;
+import com.dh.clinica.entity.Odontologo;
+import com.dh.clinica.entity.Paciente;
+import com.dh.clinica.entity.Turno;
+import com.dh.clinica.service.impl.TurnoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/turnos")
@@ -20,45 +26,45 @@ public class TurnoController {
         this.turnoService = turnoService;
     }
 
+//    @PostMapping("/guardar")
+//    public ResponseEntity<?> guardarTurno(@Valid @RequestBody TurnoRequestDto turnoRequestDto){
+//        TurnoResponseDto turnoAGuardar = turnoService.guardarTurno(turnoRequestDto);
+//        if(turnoAGuardar != null){
+//            return ResponseEntity.ok(turnoAGuardar);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El paciente o el odontologo no fueron encontrados");
+//        }
+//
+//    }
+
     @PostMapping("/guardar")
-    public ResponseEntity<?> guardarTurno(@RequestBody Turno turno){
-        Turno turnoAGuardar = turnoService.guardarTurno(turno);
-        if(turnoAGuardar != null){
-            return ResponseEntity.ok(turnoAGuardar);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El paciente o el odontologo no fueron encontrados");
-        }
+    public ResponseEntity<?> guardarTurno(@Valid @RequestBody TurnoRequestDto turnoRequestDto){
+            turnoService.guardarTurno(turnoRequestDto);
+            return ResponseEntity.ok( "{\"mensaje\": \"Turno Registrado\"}");
+
+           // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El paciente o el odontologo no fueron encontrados");
+
 
     }
 
     @GetMapping("/buscartodos")
-    public ResponseEntity<List<Turno>> buscarTodos(){
+    public ResponseEntity<List<TurnoResponseDto>> buscarTodos(){
         return ResponseEntity.ok(turnoService.buscarTodos());
     }
 
     @PutMapping("/modificar")
-    public ResponseEntity<?> modificarTurno(@RequestBody Turno turno){
-        Turno turnoEncontrado = turnoService.buscarPorId(turno.getId());
-        if(turnoEncontrado!= null){
-            turnoService.modificarTurno(turno);
-            return ResponseEntity.ok("El turno fue modificado");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<?> modificarTurno(@RequestBody TurnoModificarDto turnoModificarDto){
+        turnoService.modificarTurno(turnoModificarDto);
+        return ResponseEntity.ok("{\"mensaje\": \"El Turno fue modificado\"}");
     }
 
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<?> eliminarTurno(@PathVariable Integer id){
-        Turno turnoEncontrado = turnoService.buscarPorId(id);
-        if(turnoEncontrado!= null){
-            turnoService.eliminarTurno(id);
-            return ResponseEntity.ok("El turno fue eliminado");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        turnoService.eliminarTurno(id);
+        return ResponseEntity.ok("{\"mensaje\": \"El Turno fue eliminado\"}");
     }
 
-    @GetMapping("/buscar/{id}")
+   /* @GetMapping("/buscar/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable Integer id){
         Turno turno = turnoService.buscarPorId(id);
         if(turno != null){
@@ -68,5 +74,36 @@ public class TurnoController {
             //ResponseEntity.notFound().build();
             return ResponseEntity.status(HttpStatusCode.valueOf(404)).build();
         }
+    }*/
+    @GetMapping("/buscar/{id}")
+    public ResponseEntity<?> buscarPorId(@PathVariable Integer id){
+        Optional<Turno> turno = turnoService.buscarPorId(id);
+        if(turno.isPresent()){
+            return ResponseEntity.ok(turno.get());
+        } else {
+            // ResponseEntity.status(HttpStatus.NOT_FOUND).body("paciente no encontrado");
+            //ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatusCode.valueOf(404)).build();
+        }
     }
+    @GetMapping("/buscartodos/{apellido}")
+    public ResponseEntity<List<Turno>> buscarTurnoApellidoPaciente(@PathVariable String apellido){
+        return ResponseEntity.ok(turnoService.buscarTurnoPaciente(apellido));
+    }
+    @GetMapping("/buscarNombreApellido")
+    public ResponseEntity<List<Turno>> buscarNombreApellidoLikeP(@RequestParam String nombre,
+                                                                    @RequestParam String apellido){
+        return ResponseEntity.ok(turnoService.buscarTurnoPorNomApePacienteLike(nombre, apellido));
+    }
+    @GetMapping("/buscarXFecha")
+    public ResponseEntity<List<Turno>> buscarBetweenFecha(@RequestParam LocalDate fechaInicio, @RequestParam LocalDate fechaFin){
+        return ResponseEntity.ok(turnoService.buscarTurnofechaIniFin(fechaInicio, fechaFin));
+    }
+
+//    @GetMapping("/buscarXFecha")
+//    public ResponseEntity<List<TurnoResponseDto>> buscarBetweenFecha(@RequestParam LocalDate fechaInicio, @RequestParam LocalDate fechaFin){
+//        return ResponseEntity.ok(turnoService.buscarTurnofechaIniFin(fechaInicio, fechaFin));
+//    }
+//
+
 }
